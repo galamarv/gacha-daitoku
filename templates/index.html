@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gacha App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 20px;
+            max-width: 500px;
+        }
+        .button-container button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+            flex-basis: calc(33.333% - 20px);
+            box-sizing: border-box;
+            text-align: center;
+        }
+        #results {
+            font-size: 18px;
+            white-space: pre-line;
+        }
+        #loading {
+            font-size: 18px;
+            color: #888;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Gacha Game</h1>
+
+    <!-- Button container to group buttons together -->
+    <div class="button-container">
+        <button onclick="generateGacha('set1', 1)">Gacha 5k</button>
+        <button onclick="generateGacha('set2', 1)">Gacha 10k</button>
+        <button onclick="generateGacha('set3', 1)">Gacha 20k</button>
+        <!-- <button onclick="generateGacha('set4', 10)">Button 4</button>
+        <button onclick="generateGacha('set5', 10)">Button 5</button>
+        <button onclick="generateGacha('set6', 10)">Button 6</button> -->
+    </div>
+
+    <div id="loading">Loading... Please wait.</div>
+    <div id="results"></div>
+
+    <script>
+        function generateGacha(setKey, numberOfResults) {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').innerHTML = '';
+
+            const formData = new FormData();
+            formData.append('set_key', setKey);
+            formData.append('number_of_results', numberOfResults);
+
+            fetch('/gacha', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Delay of 2 seconds before hiding the loading text and displaying results
+                setTimeout(() => {
+                    document.getElementById('loading').style.display = 'none';
+
+                    if (data.error) {
+                        document.getElementById('results').textContent = data.error;
+                        return;
+                    }
+
+                    // Function to display the results one by one
+                    function displayResults(index) {
+                        if (index < data.length) {
+                            const resultItem = document.createElement('div');
+                            resultItem.textContent = data[index];
+                            document.getElementById('results').appendChild(resultItem);
+
+                            // Delay of 1 second (1000 ms) before displaying the next item
+                            setTimeout(() => displayResults(index + 1), 1000);
+                        }
+                    }
+
+                    // Start displaying results
+                    displayResults(0);
+                }, 1000); // 2-second delay before showing results
+            });
+        }
+    </script>
+
+</body>
+</html>
